@@ -1,0 +1,60 @@
+#AUTOMATED REPORT GENERATION(TASK2)
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+!pip install fpdf
+from fpdf import FPDF
+df=pd.read_csv("Social_Network_Ads.csv")
+df
+summary=df.describe(include="all")
+missing=df.isnull().sum()
+
+#Plotting Age vs EstimatedSalary distribution :
+plt.figure(figsize=(12,5)).set_facecolor("lightblue")
+ax=plt.axes()
+ax.set_facecolor("grey")
+plt.scatter(df["Age"],df["EstimatedSalary"],c=df["Purchased"],cmap="bwr",alpha=0.6)
+plt.title("Age vs EstimatedSalary")
+plt.xlabel("Age")
+plt.ylabel("Estimated Salary")
+plt.grid()
+plt.tight_layout()
+plt.savefig("scatter_plot.png")
+plt.close()
+
+#Creating a PDF report:
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial","B",14)
+        self.cell(0,10,"Social Network Ads Report",ln=True,align="C")
+        self.ln(10)
+
+    def chapter_title(self,title):
+        self.set_font("Arial","B",12)
+        self.cell(0,10,title,ln=True)
+        self.ln(5)
+
+    def chapter_body(self,body):
+        self.set_font("Arial", "", 11)
+        self.multi_cell(0,10,body)
+        self.ln()
+
+    def add_image(self,image_path,w=100):
+        self.image(image_path,w=w)
+        self.ln(10)
+        
+#Creating  PDF
+pdf =  PDF()
+pdf.add_page()
+#Adding summary statistics:
+pdf.chapter_title("1.Summary Statistics")
+pdf.chapter_body(summary.to_string())
+#Adding missing values:
+pdf.chapter_title("2. Missing Values")
+pdf.chapter_body(missing.to_string())
+#Adding scatterplot
+pdf.chapter_title("3. Age vs Estimated Salary")
+pdf.add_image("scatter_plot.png")
+#Saving PDF:
+pdf.output('D:/rizwana.pdf')
